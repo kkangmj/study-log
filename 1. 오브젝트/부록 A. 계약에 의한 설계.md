@@ -30,12 +30,59 @@
   - 서브타입은 슈퍼타입이 발생시키는 예외와 다른 타입의 예외를 발생시켜서는 안된다.
 
 - 가변성 규칙
+
   - 서브타입은 슈퍼타입이 발생시키는 예외와 다른 타입의 예외를 발생시켜서는 안 된다.
+
     - 일반적으로 부모 클래스가 던지는 예외가 속한 상속 계층이 아닌 다른 상속 계층에 속하는 예외를 던질 경우, 자식 클래스는 부모 클래스를 대체할 수 없음.
     - 클라이언트 관점에서 부모 클래스에 대해 기대했던 것보다 더 적은 일을 수행하는 자식 클래스는 부모 클래스와 동일하지 않음.
+
   - 서브타입의 리턴 타입은 공변성을 가져야 한다.
 
-<br>
+    ```
+    public class Publisher {}
+    public class IndependentPublisher extends Publisher{}
+
+    public class Book {}
+    public class Magazine extends Book {}
+
+    public class BookStall {
+      public Book sell(IndependentPublisher independentPublisher) {
+        return new Book(independentPublisher);
+      }
+    }
+    public class MagazineStore extends BookStall {
+      @Override
+      public Book sell(IndependentPublisher independentPublisher) {
+        return new Magazine(independentPublisher);
+      }
+    }
+    public class Customer {
+      private Book book;
+      public void order(BookStall bookStall) {
+        this.book = bookStall.sell(new IndependentPublisher());
+      }
+    }
+    ```
+
+    - 리턴 타입 공변성은 메서드의 구현 계층과 리턴 타입의 계층이 동일한 방향을 가짐.
+    - <span style="color: yellow">슈퍼타입 대신 서브타입을 반환하는 것은 더 강력한 사후조건을 정의하는 것과 같음.</span>
+    - 메서드를 구현한 슈퍼타입(BookStall)이 리턴값의 슈퍼타입(Book)을 반환할 경우 메서드를 오버라이딩하는 서브타입(MagazineStore)이 슈퍼타입에서 사용한 리턴 타입의 서브타입을 리턴 타입으로 사용하더라도 클라이언트 입장(Customer)에서 대체 가능함.
+
+  - 서브타입의 메서드 파라미터는 반공변성을 가져야 한다.
+    - 파라미터 타입 반공변성은 메서드를 정의한 클래스의 타입 계층과 파라미터의 타입 계층 방향이 반대임.
+    - <span style="color: yellow">서브타입 대신 슈퍼타입을 파라미터로 받는 것은 더 약한 사전조건을 정의하는 것과 같음.</span>
+    - 메서드를 구현한 슈퍼타입(BookStall)이 어떤 서브타입(IndependentPublisher)을 파라미터로 받을 경우 메서드를 오버라이딩하는 서브타입(MagazineStore)이 슈퍼타입에서 사용한 파라미터 타입의 슈퍼타입(Publisher)을 파라미터 타입으로 사용하더라도 클라이언트 입장(Customer)에서 대체 가능함.
+    - 단, 자바에서는 파라미터 반공변성을 허용하지 않음.
+
+- S가 T의 서브타입
+
+  - 공변성
+    - S와 T의 서브타입 관계가 그대로 유지됨. 이 경우 해당 위치에서 서브타입인 S가 슈퍼타입 T 대신 사용될 수 있음.
+  - 반공변성
+    - S와 T 사이의 서브타입 관계가 역전됨. 이 경우 해당 위치에서 슈퍼타입인 T가 S 대신 사용될 수 있음.
+  - 무공변성
+    - S와 T 사이에 아무런 관계가 없음.
+      <br>
 
 - 일찍 실패하기(Fail Fast)
   - 문제가 발생한 그 위치에서 프로그램이 실패하도록 만들어라. 문제의 원인을 파악할 수 있는 가장 빠른 방법은 문제가 발생하자마자 프로그램이 일찍 실패하게 만드는 것이다.
@@ -45,3 +92,5 @@
 - controller 단에서 Request Body의 유효성 검사를 위해 정의한 Dto가 결국 사전조건이고, controller의 리턴타입을 "넓게" 보면 사후조건이라고 할 수 있지 않을까? 왜냐하면 계약에 의한 설계는 특정 라이브러리나 프레임워크와 상관 없는 "개념"이니까.
 
 ---
+
+- <span style="color: yellow">서브타입이 슈퍼타입을 치환할 수 있다는 것은 계약에 의한 설계에서 정의한 계약 규칙과 가변성 규칙을 준수하는 것을 의미함. </span>
