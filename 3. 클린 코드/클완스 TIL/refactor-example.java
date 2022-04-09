@@ -218,8 +218,13 @@ public class Args {
     }
 
     public String getString(char arg) {
-        Args.StringArgumentMarshaler am = stringArgs.get(arg);
+        Args.ArgumentMarshaler am = stringArgs.get(arg);
         return am == null ? "" : am.getString();
+    }
+
+    public int getInt(char arg) {
+        Args.ArgumentMarshaler am = intArgs.get(arg);
+        return am == null ? 0 : am.getInteger();
     }
 
     public boolean has(char arg) {
