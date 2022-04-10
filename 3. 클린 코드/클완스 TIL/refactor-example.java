@@ -132,21 +132,25 @@ public class Args {
     }
 
     private void setBooleanArg(char argChar, boolean value) {
-        booleanArgs.get(argChar).setBoolean(value);
+        try {
+            booleanArgs.get(argChar).set("true");
+        } catch (ArgsException e) {
+        }
     }
 
     private boolean isString(char argChar) {
         return stringArgs.containsKey(argChar);
     }
 
-    private void setStringArg(char argChar, String s) {
+    private void setStringArg(char argChar, String s) throws ArgsException {
         currentArgument++;
         try {
-            stringArgs.get(argChar).setString(args[currentArgument]);
+            stringArgs.get(argChar).set(args[currentArgument]);
         } catch (ArrayIndexOutOfBoundsException e) {
             valid = false;
             errorArgument = argChar;
             errorCode = ErrorCode.MISSING_STRING;
+            throw new ArgsException();
         }
     }
 
@@ -154,23 +158,23 @@ public class Args {
         return intArgs.containsKey(argChar);
     }
 
-    private void setIntArg(char argChar) {
+    private void setIntArg(char argChar) throws ArgsException {
         currentArgument++;
         String parameter = null;
         try {
             parameter = args[currentArgument];
-            intArgs.get(argChar).setInteger(Integer.parseInt(parameter));
+            intArgs.get(argChar).set(Integer.parseInt(parameter));
         } catch (ArrayIndexOutOfBoundsException e) {
             valid = false;
             errorArgument = argChar;
             errorCode = ErrorCode.MISSING_INTEGER;
             throw new ArgsException();
-        } catch (NumberFormatException e) {
+        } catch (ArgsException e) {
             valid = false;
             errorArgumentId = argChar;
             errorParameter = parameter;
             errorCode = ErrorCode.INVALID_INTEGER;
-            throw new ArgsException();
+            throw e;
         }
     }
 
@@ -214,17 +218,17 @@ public class Args {
 
     public boolean getBoolean(char arg) {
         Args.ArgumentMarshaler am = booleanArgs.get(arg);
-        return am != null && am.getBoolean();
+        return am != null && (Boolean) am.get();
     }
 
     public String getString(char arg) {
         Args.ArgumentMarshaler am = stringArgs.get(arg);
-        return am == null ? "" : am.getString();
+        return am == null ? "" : (String) am.get();
     }
 
     public int getInt(char arg) {
         Args.ArgumentMarshaler am = intArgs.get(arg);
-        return am == null ? 0 : am.getInteger();
+        return am == null ? 0 : (Integer) am.get();
     }
 
     public boolean has(char arg) {
@@ -235,46 +239,51 @@ public class Args {
         return valid;
     }
 
-    private class ArgumentMarshaler {
-        private boolean booleanValue = false;
-        private String stringValue;
-        private int integerValue;
+    private abstract class ArgumentMarshaler {
 
-        public void setBoolean(boolean value) {
-            booleanValue = value;
-        }
+        public abstract void set(String s) throws ArgsException;
 
-        public boolean getBoolean() {
-            return booleanValue;
-        }
-
-        public void setString(String s) {
-            stringValue = s;
-        }
-
-        public String getString() {
-            return stringValue == null ? "" : stringValue;
-        }
-
-        public void setInteger(int i) {
-            integerValue = i;
-        }
-
-        public int getInteger() {
-            return integerValue;
-        }
+        public abstract Object get();
 
     }
 
     private class BooleanArgumentMarshaler extends ArgumentMarshaler {
+        private boolean booleanValue = false;
 
+        public void set(String s) {
+            booleanValue = true;
+        }
+
+        public Object get() {
+            return booleanValue;
+        }
     }
 
     private class StringArgumentMarshaler extends ArgumentMarshaler {
+        private String stringValue = "";
 
+        public void set(String s) {
+            stringValue = s;
+        }
+
+        public Object get() {
+            return stringValue;
+        }
     }
 
     private class IntegerArgumentMarshaler extends ArgumentMarshaler {
+        private int intValue = 0;
 
+        public void set(String s) throws ArgsException {
+            try {
+                intValue = Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                throw new ArgsException();
+            }
+        }
+
+        public Object get() {
+            return intValue;
+        }
     }
 }
