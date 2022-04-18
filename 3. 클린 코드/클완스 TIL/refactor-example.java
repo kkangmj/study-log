@@ -68,7 +68,7 @@ public class Args {
     }
 
     private void parseStringSchemaElement(char elementId) {
-        stringArgs.put(elementId, new ArgumentMarshaler());
+        stringArgs.put(elementId, new StringArgumentMarshaler());
     }
 
     private boolean isBooleanSchemaElement(String elementTail) {
@@ -80,7 +80,7 @@ public class Args {
     }
 
     private boolean isIntegerSchemaElement(String elementTail) {
-        return elementTail.equlas("#");
+        return elementTail.equals("#");
     }
 
     private void parseIntegerSchemaElement(char elementId) {
