@@ -44,6 +44,10 @@ public class ArgsException extends Exception {
                 return String.format("Argument -%c expects an double but was '%s'.", errorArgumentId, errorParameter);
             case MISSING_DOUBLE:
                 return String.format("Could not find double parameter for -%c.", errorArgumentId);
+            case INVALID_FORMAT:
+                return String.format("%s is not a valid argument format", errorParameter);
+            case INVALID_ARGUMENT_NAME:
+                return String.format("'%c is not a valid argument name.", errorArgumentId);
             case OK:
                 throw new Exception("TILT: Should not get here.");
         }

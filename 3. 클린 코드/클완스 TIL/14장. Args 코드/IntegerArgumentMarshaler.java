@@ -16,7 +16,11 @@ public class IntegerArgumentMarshaler implements ArgumentMarshaler {
         }
     }
 
-    public Object get() {
-        return intValue;
+    public static Integer getValue(ArgumentMarshaler am) {
+        if (am != null && am instanceof IntegerArgumentMarshaler) {
+            return ((IntegerArgumentMarshaler) am).intValue;
+        } else {
+            return 0;
+        }
     }
 }
